@@ -41,6 +41,7 @@ public class Utils {
 
         List<Integer> possibleIntersections = allIndexesOf(sentence.charAt(sentencesDifferenceCharIdx), correction);
         for (int i : possibleIntersections){
+            if (sentencesDifferenceCharIdx - i < 0 || sentencesDifferenceCharIdx - i + correction.length() > sentence.length()) continue;
             String possibleErrorString = sentence.substring(sentencesDifferenceCharIdx - i,
                     sentencesDifferenceCharIdx - i + correction.length());
 
