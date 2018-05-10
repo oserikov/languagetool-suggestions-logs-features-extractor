@@ -36,16 +36,16 @@ public class Utils {
         return result;
     }
 
-    public static int startOfErrorString(String sentence, String correction, int sentencesDifferenceCharIdx) {
+    public static int startOfErrorString(String sentence, String errorString, int sentencesDifferenceCharIdx) {
         int result = -1;
 
-        List<Integer> possibleIntersections = allIndexesOf(sentence.charAt(sentencesDifferenceCharIdx), correction);
+        List<Integer> possibleIntersections = allIndexesOf(sentence.charAt(sentencesDifferenceCharIdx), errorString);
         for (int i : possibleIntersections){
-            if (sentencesDifferenceCharIdx - i < 0 || sentencesDifferenceCharIdx - i + correction.length() > sentence.length()) continue;
+            if (sentencesDifferenceCharIdx - i < 0 || sentencesDifferenceCharIdx - i + errorString.length() > sentence.length()) continue;
             String possibleErrorString = sentence.substring(sentencesDifferenceCharIdx - i,
-                    sentencesDifferenceCharIdx - i + correction.length());
+                    sentencesDifferenceCharIdx - i + errorString.length());
 
-            if (possibleErrorString.equals(correction)){
+            if (possibleErrorString.equals(errorString)){
                 result = sentencesDifferenceCharIdx - i;
                 break;
             }
