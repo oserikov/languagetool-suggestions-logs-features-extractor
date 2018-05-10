@@ -1,8 +1,8 @@
 # languagetool-suggestions-logs-features-extractor
-The tool to extract features from the suggestions choices data collected by the languagetool.
+The tool to extract features from the suggestions choices data collected by the languagetool. Uses MySQL db.
 
 * Configuration possible via `features-extractor.properties`, an example provided.
-* Run gradle FatJar task `gradle FatJar` to build from sources or get the released version. 
+* Run gradle FatJar task `gradle FatJar` to build from sources or get [the released version](https://github.com/oserikov/languagetool-suggestions-logs-features-extractor/releases/tag/1.0). 
 
 ## ngrams and word2vec directories
 
