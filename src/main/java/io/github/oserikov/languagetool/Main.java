@@ -1,6 +1,5 @@
 package io.github.oserikov.languagetool;
 
-import javafx.util.Pair;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -8,6 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
 import org.apache.commons.csv.QuoteMode;
+import org.apache.commons.lang3.tuple.Pair;
 import org.languagetool.JLanguageTool;
 import org.languagetool.language.AmericanEnglish;
 import org.languagetool.rules.RuleMatch;
@@ -173,7 +173,7 @@ public class Main {
 
         List<FeaturesRow> featuresRows = new ArrayList<>();
 
-        Pair<String, String> context = new Pair<>("", "");
+        Pair<String, String> context = Pair.of("", "");
         int errorStartIdx = -1;
 
         int sentencesDifferenceCharIdx = Utils.firstDifferencePosition(sentence, correction);

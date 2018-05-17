@@ -1,6 +1,6 @@
 package io.github.oserikov.languagetool;
 
-import javafx.util.Pair;
+import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -85,7 +85,7 @@ public class Utils {
         String leftContext = getMaximalPossibleLeftContext(sentence, errorStartIdx, errorString, contextLength);
         String rightContext = getMaximalPossibleRightContext(sentence, errorStartIdx, errorString, contextLength);
 
-        return new Pair<>(leftContext, rightContext);
+        return Pair.of(leftContext, rightContext);
     }
 
 
