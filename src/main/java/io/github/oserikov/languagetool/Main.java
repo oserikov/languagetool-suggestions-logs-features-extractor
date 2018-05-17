@@ -220,7 +220,7 @@ public class Main {
                 processingFeaturesRow.setCoveredString(featuresRow.getCoveredString());
                 processingFeaturesRow.setReplacementString(processingReplacement);
                 processingFeaturesRow.setReplacementPosition(i);
-                processingFeaturesRow.setSelectedByUser(processingReplacement.equals(replacement));
+                processingFeaturesRow.setSelectedByUser(false);
                 featuresRows.add(processingFeaturesRow);
             }
         }
