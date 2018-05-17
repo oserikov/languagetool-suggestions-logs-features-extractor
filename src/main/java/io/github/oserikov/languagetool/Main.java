@@ -103,7 +103,7 @@ public class Main {
 
                 for (FeaturesRow featuresRow : collectedDataFeaturesRows) {
                     printer.printRecord(featuresRow.getLeftContext(), featuresRow.getRightContext(), featuresRow.getCoveredString(),
-                            featuresRow.getReplacementString(), featuresRow.getSelectedByUser());
+                            featuresRow.getReplacementString(), featuresRow.getReplacementPosition(), featuresRow.getSelectedByUser());
                 }
             }
 
@@ -189,32 +189,43 @@ public class Main {
         featuresRow.setRightContext(context.getValue());
         featuresRow.setCoveredString(covered);
         featuresRow.setReplacementString(replacement);
+        featuresRow.setReplacementPosition(suggestionPos);
         featuresRow.setSelectedByUser(suggestionPos != 99);
 
         featuresRows.add(featuresRow);
 
-        List<String> replacementsNotSelectedByUser = new ArrayList<>();
+        List<String> replacementsSuggestedByLT = new ArrayList<>();
         if (errorStartIdx != -1) {
             List<RuleMatch> matches = lt.check(sentence);
             for (RuleMatch match : matches) {
                 if (match.getFromPos() == errorStartIdx && match.getToPos() == errorStartIdx + covered.length()) {
-                    replacementsNotSelectedByUser.addAll(match.getSuggestedReplacements());
-                    replacementsNotSelectedByUser.remove(replacement);
+                    replacementsSuggestedByLT.addAll(match.getSuggestedReplacements());
                 }
             }
         }
         else {
             log.warn("Sentence not processed: {}", sentence);
         }
-        for (String notSelectedReplacement : replacementsNotSelectedByUser) {
-            FeaturesRow notSelectedFeaturesRow = new FeaturesRow();
-            notSelectedFeaturesRow.setLeftContext(featuresRow.getLeftContext());
-            notSelectedFeaturesRow.setRightContext(featuresRow.getRightContext());
-            notSelectedFeaturesRow.setCoveredString(featuresRow.getCoveredString());
-            notSelectedFeaturesRow.setReplacementString(notSelectedReplacement);
-            notSelectedFeaturesRow.setSelectedByUser(false);
-
-            featuresRows.add(notSelectedFeaturesRow);
+        for (int i = 0; i < replacementsSuggestedByLT.size(); i++) {
+            String processingReplacement = replacementsSuggestedByLT.get(i);
+            if (processingReplacement.equals(replacement)){
+                if(featuresRow.getReplacementPosition() != 99){
+                    featuresRow.setReplacementPosition(i);
+                }
+            }
+            else {
+                FeaturesRow processingFeaturesRow = new FeaturesRow();
+                processingFeaturesRow.setLeftContext(featuresRow.getLeftContext());
+                processingFeaturesRow.setRightContext(featuresRow.getRightContext());
+                processingFeaturesRow.setCoveredString(featuresRow.getCoveredString());
+                processingFeaturesRow.setReplacementString(processingReplacement);
+                processingFeaturesRow.setReplacementPosition(i);
+                processingFeaturesRow.setSelectedByUser(processingReplacement.equals(replacement));
+                featuresRows.add(processingFeaturesRow);
+            }
+        }
+        if (replacementsSuggestedByLT.size() == 0 && featuresRow.getReplacementPosition() != 99){
+            featuresRow.setReplacementPosition(0);
         }
 
         return featuresRows;
@@ -230,5 +241,6 @@ class FeaturesRow {
     private String rightContext;
     private String coveredString;
     private String replacementString;
+    private Integer replacementPosition;
     private Boolean selectedByUser;
 }
