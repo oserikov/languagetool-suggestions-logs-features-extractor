@@ -102,7 +102,7 @@ public class Main {
                 List<FeaturesRow> collectedDataFeaturesRows = processRow(sentence, correction, covered, replacement, suggestion_pos);
 
                 for (FeaturesRow featuresRow : collectedDataFeaturesRows) {
-                    printer.printRecord(featuresRow.getLeftContext(), featuresRow.getRightContext(), featuresRow.getCoveredString(),
+                    printer.printRecord(i, featuresRow.getLeftContext(), featuresRow.getRightContext(), featuresRow.getCoveredString(),
                             featuresRow.getReplacementString(), featuresRow.getReplacementPosition(), featuresRow.getSelectedByUser());
                 }
             }
