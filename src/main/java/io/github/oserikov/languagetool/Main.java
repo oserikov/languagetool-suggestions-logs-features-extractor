@@ -9,7 +9,7 @@ import org.apache.commons.csv.CSVPrinter;
 import org.apache.commons.csv.QuoteMode;
 import org.apache.commons.lang3.tuple.Pair;
 import org.languagetool.JLanguageTool;
-import org.languagetool.language.AmericanEnglish;
+import org.languagetool.language.*;
 import org.languagetool.rules.RuleMatch;
 
 import java.io.FileInputStream;
@@ -17,9 +17,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
+import java.util.*;
 
 import static io.github.oserikov.languagetool.DBUtils.*;
 
@@ -35,14 +33,13 @@ public class Main {
     private static final int DEFAULT_CONTEXT_LENGTH = 2;
 
     private static final String DEFAULT_QUERY =
-            "SELECT sentence, correction, covered, replacement, suggestion_pos " +
+            "SELECT sentence, correction, covered, replacement, suggestion_pos, rule_id " +
                     "FROM corrections " +
                     "WHERE " +
-                    "language = \'en-US\' and " +
-                    "rule_id = \'MORFOLOGIK_RULE_EN_US\' and " +
-                    "sentence != correction and " +
+                    "language = \'en-US\' AND " +
+                    "rule_id LIKE \'MORFOLOGIK_RULE_%%\' AND " +
+                    "sentence != correction AND " +
                     "covered != replacement";
-
 
 
     public static String csvFileName;
@@ -56,19 +53,50 @@ public class Main {
     private static String query;
 
 
-    private static final JLanguageTool lt = new JLanguageTool(new AmericanEnglish());
+    private static final JLanguageTool defaultLT = new JLanguageTool(new AmericanEnglish());
     private static final String PROPERTIES_FILENAME = "features-extractor.properties";
+
+    private static final Map<String, JLanguageTool> languages = new HashMap<String, JLanguageTool>(){
+        {
+            put("MORFOLOGIK_RULE_AST", new JLanguageTool(new AustrianGerman()));
+            put("MORFOLOGIK_RULE_BE_BY", new JLanguageTool(new Belarusian()));
+            put("MORFOLOGIK_RULE_BR_FR", new JLanguageTool(new Breton()));
+            put("MORFOLOGIK_RULE_CA_ES", new JLanguageTool(new Catalan()));
+            put("MORFOLOGIK_RULE_EL_GR", new JLanguageTool(new Greek()));
+            put("MORFOLOGIK_RULE_EN_CA", new JLanguageTool(new CanadianEnglish()));
+            put("MORFOLOGIK_RULE_EN_GB", new JLanguageTool(new BritishEnglish()));
+            put("MORFOLOGIK_RULE_EN_NZ", new JLanguageTool(new NewZealandEnglish()));
+            put("MORFOLOGIK_RULE_EN_US", new JLanguageTool(new AmericanEnglish()));
+            put("MORFOLOGIK_RULE_EN_ZA", new JLanguageTool(new SouthAfricanEnglish()));
+            put("MORFOLOGIK_RULE_ES", new JLanguageTool(new Spanish()));
+            put("MORFOLOGIK_RULE_IT_IT", new JLanguageTool(new Italian()));
+            put("MORFOLOGIK_RULE_NL_NL", new JLanguageTool(new Dutch()));
+            put("MORFOLOGIK_RULE_PL_PL", new JLanguageTool(new Polish()));
+            put("MORFOLOGIK_RULE_RO_RO", new JLanguageTool(new Romanian()));
+            put("MORFOLOGIK_RULE_RU_RU", new JLanguageTool(new Russian()));
+            put("MORFOLOGIK_RULE_SK_SK", new JLanguageTool(new Slovak()));
+            put("MORFOLOGIK_RULE_SL_SI", new JLanguageTool(new Slovenian()));
+            put("MORFOLOGIK_RULE_TL", new JLanguageTool(new Tagalog()));
+            put("MORFOLOGIK_RULE_UK_UA", new JLanguageTool(new Ukrainian()));
+        }
+    };
 
 
     public static void main(String[] args) {
         log.info("Hello!");
 
         initConfig();
-        initLT();
-
+        initLanguagesMap();
         processDBData();
 
         log.info("Bye!");
+    }
+
+    private static void initLanguagesMap() {
+        for (JLanguageTool lang : languages.values()){
+            initSingleLT(lang);
+        }
+        initSingleLT(defaultLT);
     }
 
     private static void processDBData() {
@@ -98,12 +126,19 @@ public class Main {
                 String covered = rs.getString("covered");
                 String replacement = rs.getString("replacement");
                 Integer suggestion_pos = rs.getInt("suggestion_pos");
+                String morfologik_rule_id = rs.getString("rule_id");
 
-                List<FeaturesRow> collectedDataFeaturesRows = processRow(sentence, correction, covered, replacement, suggestion_pos);
+                List<FeaturesRow> collectedDataFeaturesRows = processRow(sentence, correction, covered, replacement, suggestion_pos, morfologik_rule_id);
 
                 for (FeaturesRow featuresRow : collectedDataFeaturesRows) {
-                    printer.printRecord(i, featuresRow.getLeftContext(), featuresRow.getRightContext(), featuresRow.getCoveredString(),
-                            featuresRow.getReplacementString(), featuresRow.getReplacementPosition(), featuresRow.getSelectedByUser());
+                    printer.printRecord(i,
+                                        featuresRow.getLeftContext(),
+                                        featuresRow.getRightContext(),
+                                        featuresRow.getCoveredString(),
+                                        featuresRow.getReplacementString(),
+                                        featuresRow.getReplacementPosition(),
+                                        featuresRow.getSelectedByUser(),
+                                        morfologik_rule_id);
                 }
             }
 
@@ -115,7 +150,7 @@ public class Main {
         }
     }
 
-    private static void initLT() {
+    private static void initSingleLT(JLanguageTool lt) {
         try {
             lt.activateLanguageModelRules(Paths.get(pathToNgrams).toFile());
             log.info("n-gram data loaded.");
@@ -169,7 +204,7 @@ public class Main {
 
 
     private static List<FeaturesRow> processRow(String sentence, String correction, String covered, String replacement,
-                                                Integer suggestionPos) throws SQLException, IOException {
+                                                Integer suggestionPos, String morfologik_rule_id) throws SQLException, IOException {
 
         List<FeaturesRow> featuresRows = new ArrayList<>();
 
@@ -196,7 +231,7 @@ public class Main {
 
         List<String> replacementsSuggestedByLT = new ArrayList<>();
         if (errorStartIdx != -1) {
-            List<RuleMatch> matches = lt.check(sentence);
+            List<RuleMatch> matches = languages.getOrDefault(morfologik_rule_id, defaultLT).check(sentence);
             for (RuleMatch match : matches) {
                 if (match.getFromPos() == errorStartIdx && match.getToPos() == errorStartIdx + covered.length()) {
                     replacementsSuggestedByLT.addAll(match.getSuggestedReplacements());

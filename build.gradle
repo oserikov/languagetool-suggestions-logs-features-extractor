@@ -26,5 +26,5 @@ dependencies {
     compile group: 'org.slf4j', name: 'slf4j-api'
     compile group: 'ch.qos.logback', name: 'logback-classic', version: '1.2.3'
     compile group: 'ch.qos.logback', name: 'logback-core', version: '1.2.3'
-    compile group: 'org.languagetool', name: 'language-en', version: '4.1'
+    compile group: 'org.languagetool', name: 'language-all', version: '4.1'
 }
