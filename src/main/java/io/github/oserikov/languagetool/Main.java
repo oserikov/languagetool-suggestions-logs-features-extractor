@@ -62,6 +62,7 @@ public class Main {
             put("MORFOLOGIK_RULE_BR_FR", new JLanguageTool(new Breton()));
             put("MORFOLOGIK_RULE_CA_ES", new JLanguageTool(new Catalan()));
             put("MORFOLOGIK_RULE_EL_GR", new JLanguageTool(new Greek()));
+            put("MORFOLOGIK_RULE_EN_AU", new JLanguageTool(new AustralianEnglish()));
             put("MORFOLOGIK_RULE_EN_CA", new JLanguageTool(new CanadianEnglish()));
             put("MORFOLOGIK_RULE_EN_GB", new JLanguageTool(new BritishEnglish()));
             put("MORFOLOGIK_RULE_EN_NZ", new JLanguageTool(new NewZealandEnglish()));
@@ -77,6 +78,7 @@ public class Main {
             put("MORFOLOGIK_RULE_SL_SI", new JLanguageTool(new Slovenian()));
             put("MORFOLOGIK_RULE_TL", new JLanguageTool(new Tagalog()));
             put("MORFOLOGIK_RULE_UK_UA", new JLanguageTool(new Ukrainian()));
+            put("MORFOLOGIK_RULE_SR_EKAVIAN", new JLanguageTool(new JekavianSerbian()));
         }
     };
 
