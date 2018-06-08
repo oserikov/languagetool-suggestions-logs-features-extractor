@@ -117,6 +117,7 @@ public class Main {
              CSVPrinter printer = new CSVPrinter(csvOut, CSVFormat.DEFAULT.withQuoteMode(QuoteMode.NON_NUMERIC).withEscape('\\')))
         {
             int i = 0;
+            int errorsCnt = 0;
             for (; rs.next(); i++) {
                 if (i % logFrequency == 0) {
                     log.info("processed {} rows. ...", i);
@@ -129,24 +130,30 @@ public class Main {
                 Integer suggestion_pos = rs.getInt("suggestion_pos");
                 String morfologik_rule_id = rs.getString("rule_id");
                 String language = rs.getString("language");
+                try {
+                    List<FeaturesRow> collectedDataFeaturesRows = processRow(sentence, correction, covered, replacement, suggestion_pos, morfologik_rule_id);
 
-                List<FeaturesRow> collectedDataFeaturesRows = processRow(sentence, correction, covered, replacement, suggestion_pos, morfologik_rule_id);
-
-                for (FeaturesRow featuresRow : collectedDataFeaturesRows) {
-                    printer.printRecord(i,
-                                        featuresRow.getLeftContext(),
-                                        featuresRow.getRightContext(),
-                                        featuresRow.getCoveredString(),
-                                        featuresRow.getReplacementString(),
-                                        featuresRow.getReplacementPosition(),
-                                        featuresRow.getSelectedByUser(),
-                                        morfologik_rule_id,
-                                        language);
+                    for (FeaturesRow featuresRow : collectedDataFeaturesRows) {
+                        printer.printRecord(i,
+                                featuresRow.getLeftContext(),
+                                featuresRow.getRightContext(),
+                                featuresRow.getCoveredString(),
+                                featuresRow.getReplacementString(),
+                                featuresRow.getReplacementPosition(),
+                                featuresRow.getSelectedByUser(),
+                                morfologik_rule_id,
+                                language);
+                    }
+                }
+                catch (Exception e) {
+                    log.error("Error! {} {}. On row: {}, {}, {}, {}, {}, {}, {}", e.getClass(), e.getMessage(),
+                            sentence, correction, covered, replacement, suggestion_pos, morfologik_rule_id, language);
+                    errorsCnt += 1;
                 }
             }
 
             printer.close();
-            log.info("processed {} rows. Done!", i);
+            log.info("processed {} rows with {} errors. Done!", i, errorsCnt);
         }
         catch (Exception e) {
             log.error("Error!", e);
