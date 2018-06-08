@@ -33,10 +33,9 @@ public class Main {
     private static final int DEFAULT_CONTEXT_LENGTH = 2;
 
     private static final String DEFAULT_QUERY =
-            "SELECT sentence, correction, covered, replacement, suggestion_pos, rule_id " +
+            "SELECT sentence, correction, covered, replacement, suggestion_pos, rule_id, language " +
                     "FROM corrections " +
                     "WHERE " +
-                    "language = \'en-US\' AND " +
                     "rule_id LIKE \'MORFOLOGIK_RULE_%%\' AND " +
                     "sentence != correction AND " +
                     "covered != replacement";
@@ -127,6 +126,7 @@ public class Main {
                 String replacement = rs.getString("replacement");
                 Integer suggestion_pos = rs.getInt("suggestion_pos");
                 String morfologik_rule_id = rs.getString("rule_id");
+                String language = rs.getString("language");
 
                 List<FeaturesRow> collectedDataFeaturesRows = processRow(sentence, correction, covered, replacement, suggestion_pos, morfologik_rule_id);
 
@@ -138,7 +138,8 @@ public class Main {
                                         featuresRow.getReplacementString(),
                                         featuresRow.getReplacementPosition(),
                                         featuresRow.getSelectedByUser(),
-                                        morfologik_rule_id);
+                                        morfologik_rule_id,
+                                        language);
                 }
             }
 
