@@ -30,13 +30,20 @@ public class Main {
     private static final String DEFAULT_PATH_TO_NGRAMS = "C:\\Users\\olegs\\Documents\\ngram";
     private static final String DEFAULT_PATH_TO_WORD2VEC = "C:\\Users\\olegs\\Documents\\word2vec";
     private static final int DEFAULT_LOG_FREQUENCY = 100;
-    private static final int DEFAULT_CONTEXT_LENGTH = 2;
+    private static final int DEFAULT_CONTEXT_LENGTH = 4;
 
     private static final String DEFAULT_QUERY =
             "SELECT sentence, correction, covered, replacement, suggestion_pos, rule_id, language " +
                     "FROM corrections " +
                     "WHERE " +
-                    "rule_id LIKE \'MORFOLOGIK_RULE_%%\' AND " +
+                    "rule_id LIKE \'MORFOLOGIK_RULE_%%\' OR " +
+                    "rule_id LIKE \'%%GERMAN_SPELLER_RULE%%\' OR " +
+                    "rule_id = \'HUNSPELL_NO_SUGGEST_RULE\' OR " +
+                    "rule_id = \'HUNSPELL_RULE\' OR " +
+                    "rule_id = \'AUSTRIAN_GERMAN_SPELLER_RULE\' OR " +
+                    "rule_id = \'FR_SPELLING_RULE\' OR " +
+                    "rule_id = \'GERMAN_SPELLER_RULE\' OR " +
+                    "rule_id = \'SWISS_GERMAN_SPELLER_RULE\' AND " +
                     "sentence != correction AND " +
                     "covered != replacement";
 
@@ -57,6 +64,9 @@ public class Main {
 
     private static final Map<String, JLanguageTool> languages = new HashMap<String, JLanguageTool>(){
         {
+            put("AUSTRIAN_GERMAN_SPELLER_RULE", new JLanguageTool(new AustrianGerman()));
+            put("FR_SPELLING_RULE", new JLanguageTool(new French()));
+            put("GERMAN_SPELLER_RULE", new JLanguageTool(new GermanyGerman()));
             put("MORFOLOGIK_RULE_AST", new JLanguageTool(new AustrianGerman()));
             put("MORFOLOGIK_RULE_BE_BY", new JLanguageTool(new Belarusian()));
             put("MORFOLOGIK_RULE_BR_FR", new JLanguageTool(new Breton()));
@@ -76,9 +86,10 @@ public class Main {
             put("MORFOLOGIK_RULE_RU_RU", new JLanguageTool(new Russian()));
             put("MORFOLOGIK_RULE_SK_SK", new JLanguageTool(new Slovak()));
             put("MORFOLOGIK_RULE_SL_SI", new JLanguageTool(new Slovenian()));
+            put("MORFOLOGIK_RULE_SR_EKAVIAN", new JLanguageTool(new JekavianSerbian()));
             put("MORFOLOGIK_RULE_TL", new JLanguageTool(new Tagalog()));
             put("MORFOLOGIK_RULE_UK_UA", new JLanguageTool(new Ukrainian()));
-            put("MORFOLOGIK_RULE_SR_EKAVIAN", new JLanguageTool(new JekavianSerbian()));
+            put("SWISS_GERMAN_SPELLER_RULE", new JLanguageTool(new SwissGerman()));
         }
     };
 
