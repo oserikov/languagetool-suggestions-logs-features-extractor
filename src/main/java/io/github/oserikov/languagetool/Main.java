@@ -30,7 +30,7 @@ public class Main {
     private static final String DEFAULT_PATH_TO_NGRAMS = "C:\\Users\\olegs\\Documents\\ngram";
     private static final String DEFAULT_PATH_TO_WORD2VEC = "C:\\Users\\olegs\\Documents\\word2vec";
     private static final int DEFAULT_LOG_FREQUENCY = 100;
-    private static final int DEFAULT_CONTEXT_LENGTH = 4;
+    private static final int DEFAULT_CONTEXT_LENGTH = 3;
 
     private static final String DEFAULT_QUERY =
             "SELECT sentence, correction, covered, replacement, suggestion_pos, rule_id, language " +
