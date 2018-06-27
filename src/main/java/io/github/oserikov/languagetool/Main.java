@@ -67,7 +67,7 @@ public class Main {
             put("AUSTRIAN_GERMAN_SPELLER_RULE", new JLanguageTool(new AustrianGerman()));
             put("FR_SPELLING_RULE", new JLanguageTool(new French()));
             put("GERMAN_SPELLER_RULE", new JLanguageTool(new GermanyGerman()));
-            put("MORFOLOGIK_RULE_AST", new JLanguageTool(new AustrianGerman()));
+            put("MORFOLOGIK_RULE_AST", new JLanguageTool(new Asturian()));
             put("MORFOLOGIK_RULE_BE_BY", new JLanguageTool(new Belarusian()));
             put("MORFOLOGIK_RULE_BR_FR", new JLanguageTool(new Breton()));
             put("MORFOLOGIK_RULE_CA_ES", new JLanguageTool(new Catalan()));
