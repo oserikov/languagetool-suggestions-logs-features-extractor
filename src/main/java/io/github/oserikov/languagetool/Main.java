@@ -28,7 +28,7 @@ public class Main {
     private static final String DEFAULT_USER = "root";
     private static final String DEFAULT_PASS = "password";
     private static final String DEFAULT_PATH_TO_NGRAMS = "C:\\Users\\olegs\\Documents\\ngram";
-    private static final String DEFAULT_PATH_TO_WORD2VEC = "C:\\Users\\olegs\\Documents\\word2vec";
+//    private static final String DEFAULT_PATH_TO_WORD2VEC = "C:\\Users\\olegs\\Documents\\word2vec";
     private static final int DEFAULT_LOG_FREQUENCY = 100;
     private static final int DEFAULT_CONTEXT_LENGTH = 3;
 
@@ -53,7 +53,7 @@ public class Main {
     private static String dbUser;
     private static String dbPass;
     private static String pathToNgrams;
-    private static String pathToWord2Vec;
+//    private static String pathToWord2Vec;
     private static Integer logFrequency;
     private static Integer contextLength;
     private static String query;
@@ -178,12 +178,12 @@ public class Main {
         } catch (RuntimeException | IOException e) {
             log.error("Error! n-gram data is not loaded.", e);
         }
-        try {
-            lt.activateWord2VecModelRules(Paths.get(pathToWord2Vec).toFile());
-            log.info("word2vec data loaded.");
-        } catch (RuntimeException | IOException e) {
-            log.error("Error! word2vec data is not loaded.", e);
-        }
+//        try {
+//            lt.activateWord2VecModelRules(Paths.get(pathToWord2Vec).toFile());
+//            log.info("word2vec data loaded.");
+//        } catch (RuntimeException | IOException e) {
+//            log.error("Error! word2vec data is not loaded.", e);
+//        }
     }
 
     private static void initConfig() {
@@ -203,7 +203,7 @@ public class Main {
         dbPass = mainProperties.getProperty("mysql_password", DEFAULT_PASS);
 
         pathToNgrams = mainProperties.getProperty("ngrams_folder", DEFAULT_PATH_TO_NGRAMS);
-        pathToWord2Vec = mainProperties.getProperty("word2vec_folder", DEFAULT_PATH_TO_WORD2VEC);
+//        pathToWord2Vec = mainProperties.getProperty("word2vec_folder", DEFAULT_PATH_TO_WORD2VEC);
         contextLength = DEFAULT_CONTEXT_LENGTH;
 
         if (mainProperties.stringPropertyNames().contains("log_frequency_in_number_of_rows")) {
