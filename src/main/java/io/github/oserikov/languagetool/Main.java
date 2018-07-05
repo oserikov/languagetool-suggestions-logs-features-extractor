@@ -161,7 +161,13 @@ public class Main {
                 String correction = rs.get("correction");
                 String covered = rs.get("covered");
                 String replacement = rs.get("replacement");
-                Integer suggestion_pos = Integer.parseInt(rs.get("suggestion_pos"));
+                String suggestion_pos_as_string = rs.get("suggestion_pos");
+                try {
+                    Integer.parseInt(suggestion_pos_as_string);
+                } catch (NumberFormatException e) {
+                    suggestion_pos_as_string = "-1";
+                }
+                Integer suggestion_pos = Integer.parseInt(suggestion_pos_as_string);
                 String morfologik_rule_id = rs.get("rule_id");
                 String language = rs.get("language");
 
