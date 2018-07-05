@@ -6,15 +6,14 @@ import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
+import org.apache.commons.csv.CSVRecord;
 import org.apache.commons.csv.QuoteMode;
 import org.apache.commons.lang3.tuple.Pair;
 import org.languagetool.JLanguageTool;
 import org.languagetool.language.*;
 import org.languagetool.rules.RuleMatch;
 
-import java.io.FileInputStream;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
 import java.nio.file.Paths;
 import java.sql.*;
 import java.util.*;
@@ -23,14 +22,16 @@ import static io.github.oserikov.languagetool.DBUtils.*;
 
 @Slf4j
 public class Main {
-    private static final String DEFAULT_CSV_FILENAME = "features.csv";
+    private static final String DEFAULT_OUTPUT_CSV_FILENAME = "features.csv";
+    private static final String DEFAULT_INPUT_CSV_FILENAME = "corrections_dump.tsv";
     private static final String DEFAULT_DB_URL = "jdbc:mysql://localhost:3306/LT_TEST?serverTimezone=UTC";
     private static final String DEFAULT_USER = "root";
     private static final String DEFAULT_PASS = "password";
     private static final String DEFAULT_PATH_TO_NGRAMS = "C:\\Users\\olegs\\Documents\\ngram";
-//    private static final String DEFAULT_PATH_TO_WORD2VEC = "C:\\Users\\olegs\\Documents\\word2vec";
+    //    private static final String DEFAULT_PATH_TO_WORD2VEC = "C:\\Users\\olegs\\Documents\\word2vec";
     private static final int DEFAULT_LOG_FREQUENCY = 100;
     private static final int DEFAULT_CONTEXT_LENGTH = 3;
+    private static final int DEFAULT_STARTING_ROW_NUM = 1; // 1 based
 
     private static final String DEFAULT_QUERY =
             "SELECT sentence, correction, covered, replacement, suggestion_pos, rule_id, language " +
@@ -48,15 +49,17 @@ public class Main {
                     "covered != replacement";
 
 
-    public static String csvFileName;
+    private static String outputCsvFileName;
+    private static String inputCsvFileName;
     private static String dbUrl;
     private static String dbUser;
     private static String dbPass;
     private static String pathToNgrams;
-//    private static String pathToWord2Vec;
+    //    private static String pathToWord2Vec;
     private static Integer logFrequency;
     private static Integer contextLength;
     private static String query;
+    private static Integer startingRowNum;
 
 
     private static final JLanguageTool defaultLT = new JLanguageTool(new AmericanEnglish());
@@ -114,33 +117,62 @@ public class Main {
     private static void processDBData() {
         FileWriter csvOut;
         try {
-            csvOut = new FileWriter(csvFileName);
+            csvOut = new FileWriter(outputCsvFileName);
         } catch (IOException e) {
             log.error("Error! issue when creating csv file.", e);
             return;
         }
 
+        Reader in;
+        try {
+            in = new FileReader(inputCsvFileName);
+        } catch (IOException e) {
+            log.error("Error! issue when opening csv file.", e);
+            return;
+        }
+
         log.debug(query);
 
-        try (Connection conn = getConnection(dbUrl, dbUser, dbPass);
-             Statement stmt = getStatement(conn);
-             ResultSet rs = getRs(stmt, query);
-             CSVPrinter printer = new CSVPrinter(csvOut, CSVFormat.DEFAULT.withQuoteMode(QuoteMode.NON_NUMERIC).withEscape('\\')))
+        String[] HEADERS = {"sentence", "correction", "covered", "replacement", "suggestion_pos", "rule_id", "language"};
+
+        try (
+//             Connection conn = getConnection(dbUrl, dbUser, dbPass);
+//             Statement stmt = getStatement(conn);
+//             ResultSet rs = getRs(stmt, query);
+                CSVPrinter printer = new CSVPrinter(csvOut, CSVFormat.DEFAULT.withQuoteMode(QuoteMode.NON_NUMERIC).withEscape('\\')))
         {
+            Iterable<CSVRecord> records = CSVFormat.DEFAULT
+                    .withHeader(HEADERS)
+                    .withDelimiter('\t')
+                    .withEscape('\\')
+                    .withRecordSeparator('\n')
+                    .parse(in);
+
             int i = 0;
             int errorsCnt = 0;
-            for (; rs.next(); i++) {
+            for (CSVRecord rs : records) {
+                i++;
+                if (i < startingRowNum) continue;
                 if (i % logFrequency == 0) {
                     log.info("processed {} rows. ...", i);
                 }
 
-                String sentence = rs.getString("sentence");
-                String correction = rs.getString("correction");
-                String covered = rs.getString("covered");
-                String replacement = rs.getString("replacement");
-                Integer suggestion_pos = rs.getInt("suggestion_pos");
-                String morfologik_rule_id = rs.getString("rule_id");
-                String language = rs.getString("language");
+                String sentence = rs.get("sentence");
+                String correction = rs.get("correction");
+                String covered = rs.get("covered");
+                String replacement = rs.get("replacement");
+                Integer suggestion_pos = Integer.parseInt(rs.get("suggestion_pos"));
+                String morfologik_rule_id = rs.get("rule_id");
+                String language = rs.get("language");
+
+//                System.out.print(sentence + "\t");
+//                System.out.print(correction + "\t");
+//                System.out.print(covered + "\t");
+//                System.out.print(replacement + "\t");
+//                System.out.print(suggestion_pos + "\t");
+//                System.out.print(morfologik_rule_id + "\t");
+//                System.out.print(language + "\n");
+
                 try {
                     List<FeaturesRow> collectedDataFeaturesRows = processRow(sentence, correction, covered, replacement, suggestion_pos, morfologik_rule_id);
 
@@ -197,7 +229,8 @@ public class Main {
             return;
         }
 
-        csvFileName = mainProperties.getProperty("output_csv_filename", DEFAULT_CSV_FILENAME);
+        outputCsvFileName = mainProperties.getProperty("output_csv_filename", DEFAULT_OUTPUT_CSV_FILENAME);
+        inputCsvFileName = mainProperties.getProperty("input_csv_filename", DEFAULT_INPUT_CSV_FILENAME);
         dbUrl = mainProperties.getProperty("mysql_connection_string", DEFAULT_DB_URL);
         dbUser = mainProperties.getProperty("mysql_user", DEFAULT_USER);
         dbPass = mainProperties.getProperty("mysql_password", DEFAULT_PASS);
@@ -218,6 +251,12 @@ public class Main {
             query = DEFAULT_QUERY + String.format(" LIMIT %d", limit);
         } else {
             query = DEFAULT_QUERY;
+        }
+
+        if (mainProperties.stringPropertyNames().contains("input_starting_line")){
+            startingRowNum = Integer.parseInt(mainProperties.getProperty("input_starting_line"));
+        } else {
+            startingRowNum = DEFAULT_STARTING_ROW_NUM;
         }
 
         log.info("properties passed: {}", mainProperties.stringPropertyNames());
